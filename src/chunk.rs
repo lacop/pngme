@@ -37,7 +37,12 @@ impl Chunk {
         Ok(std::str::from_utf8(&self.data).map(str::to_string)?)
     }
     pub fn as_bytes(&self) -> Vec<u8> {
-        todo!()
+        let mut result = Vec::with_capacity(self.data.len() + 12);
+        result.extend_from_slice(&u32::to_be_bytes(self.data.len() as u32));
+        result.extend_from_slice(&self.chunk_type.bytes());
+        result.extend_from_slice(&self.data);
+        result.extend_from_slice(&self.crc.to_be_bytes());
+        result
     }
 }
 

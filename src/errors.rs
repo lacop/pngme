@@ -11,4 +11,10 @@ pub enum Error {
     ChunkLengthInvalid,
     #[error("Bad CRC")]
     BadChunkCrc,
+    #[error("Could not find chunk with given type")]
+    NoSuchChunk,
+    #[error("Does not start with the PNG header")]
+    InvalidHeader,
+    #[error("File too short")]
+    FileTooShort,
 }

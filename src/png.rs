@@ -2,31 +2,49 @@ use crate::chunk::Chunk;
 use crate::errors::Error;
 use anyhow::Result;
 
-pub struct Png;
+pub struct Png(Vec<Chunk>);
 
 impl Png {
-    const STANDARD_HEADER: [u8; 8] = *b"abcdabcd";
+    // http://www.libpng.org/pub/png/spec/1.2/PNG-Structure.html
+    //   3.1. PNG file signature
+    const STANDARD_HEADER: [u8; 8] = [137, 80, 78, 71, 13, 10, 26, 10];
 
     pub fn from_chunks(chunks: Vec<Chunk>) -> Png {
-        todo!()
+        Png(chunks)
     }
     pub fn append_chunk(&mut self, chunk: Chunk) {
-        todo!()
+        self.0.push(chunk)
     }
     pub fn remove_chunk(&mut self, chunk_type: &str) -> Result<Chunk> {
-        todo!()
+        // Unclear what to do if there are multiple...
+        if let Some((idx, _)) = self
+            .0
+            .iter()
+            .enumerate()
+            .find(|(_, chunk)| chunk.chunk_type().to_string() == chunk_type)
+        {
+            Ok(self.0.remove(idx))
+        } else {
+            Err(Error::NoSuchChunk.into())
+        }
     }
     pub fn header(&self) -> &[u8; 8] {
-        todo!()
+        &Self::STANDARD_HEADER
     }
     pub fn chunks(&self) -> &[Chunk] {
-        todo!()
+        &self.0
     }
     pub fn chunk_by_type(&self, chunk_type: &str) -> Option<&Chunk> {
-        todo!()
+        self.0
+            .iter()
+            .find(|chunk| chunk.chunk_type().to_string() == chunk_type)
     }
     pub fn as_bytes(&self) -> Vec<u8> {
-        todo!()
+        let mut result: Vec<u8> = Self::STANDARD_HEADER.into();
+        for chunk in &self.0 {
+            result.append(&mut chunk.as_bytes());
+        }
+        result
     }
 }
 
@@ -34,13 +52,42 @@ impl TryFrom<&[u8]> for Png {
     type Error = Error;
 
     fn try_from(value: &[u8]) -> Result<Self, Self::Error> {
-        todo!()
+        let header: [u8; 8] = value
+            .get(0..8)
+            .ok_or(Error::FileTooShort)?
+            .try_into()
+            .expect("Must be 8 bytes");
+        if header != Png::STANDARD_HEADER {
+            return Err(Error::InvalidHeader);
+        }
+
+        let mut png = Png::from_chunks(vec![]);
+
+        let mut pos = 8;
+        while pos < value.len() {
+            let length = u32::from_be_bytes(
+                value
+                    .get(pos..pos + 4)
+                    .ok_or(Error::FileTooShort)?
+                    .try_into()
+                    .expect("Must be 4 bytes"),
+            ) as usize;
+            let chunk = Chunk::try_from(
+                value
+                    .get(pos..pos + length + 12)
+                    .ok_or(Error::FileTooShort)?,
+            )?;
+            png.append_chunk(chunk);
+            pos += length + 12;
+        }
+
+        Ok(png)
     }
 }
 
 impl std::fmt::Display for Png {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        todo!()
+        f.write_fmt(format_args!("PNG with {} blocks", self.0.len()))
     }
 }
 
@@ -50,7 +97,6 @@ mod tests {
     use crate::chunk::Chunk;
     use crate::chunk_type::ChunkType;
     use std::convert::TryFrom;
-    use std::str::FromStr;
 
     fn testing_chunks() -> Vec<Chunk> {
         let mut chunks = Vec::new();
