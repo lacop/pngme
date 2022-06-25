@@ -5,6 +5,7 @@ mod args;
 mod chunk;
 mod chunk_type;
 mod commands;
+mod errors;
 mod png;
 
 use anyhow::Result;

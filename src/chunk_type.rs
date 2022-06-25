@@ -1,10 +1,7 @@
+use crate::errors::Error;
+
 #[derive(PartialEq, Eq, Debug)]
 pub struct ChunkType([u8; 4]);
-
-#[derive(Debug)]
-pub enum Error {
-    InvalidChunkType,
-}
 
 impl ChunkType {
     pub fn bytes(&self) -> [u8; 4] {
