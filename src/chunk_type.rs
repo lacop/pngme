@@ -1,46 +1,73 @@
 #[derive(PartialEq, Eq, Debug)]
-pub struct ChunkType;
+pub struct ChunkType([u8; 4]);
+
+#[derive(Debug)]
+pub enum Error {
+    InvalidChunkType,
+}
 
 impl ChunkType {
     pub fn bytes(&self) -> [u8; 4] {
-        todo!()
+        self.0
     }
-    pub fn is_valid(&self) -> bool {
-        todo!()
+
+    fn get_bit(&self, n: usize) -> bool {
+        self.0[n] & (1 << 5) != 0
     }
     pub fn is_critical(&self) -> bool {
-        todo!()
+        println!("citical {} {}", self, self.get_bit(0));
+        // Ancillary bit. 0 = critical.
+        !self.get_bit(0)
     }
     pub fn is_public(&self) -> bool {
-        todo!()
+        // Private bit. 0 == public.
+        !self.get_bit(1)
     }
     pub fn is_reserved_bit_valid(&self) -> bool {
-        todo!()
+        // Reserved bit. Must be 0.
+        !self.get_bit(2)
     }
     pub fn is_safe_to_copy(&self) -> bool {
-        todo!()
+        // Safe-to-copy bit. 1 == safe.
+        self.get_bit(3)
+    }
+    pub fn is_valid(&self) -> bool {
+        // Unclear what this is supposed to do?
+        self.is_reserved_bit_valid()
     }
 }
 
 impl TryFrom<[u8; 4]> for ChunkType {
-    type Error = (); // TODO
-
+    type Error = Error;
+    // http://www.libpng.org/pub/png/spec/1.2/PNG-Structure.html
+    //   3.2. Chunk layout
+    //     For convenience in description and in examining PNG files,
+    //     type codes are restricted to consist of uppercase and lowercase
+    //     ASCII letters (A-Z and a-z, or 65-90 and 97-122 decimal).
     fn try_from(value: [u8; 4]) -> Result<Self, Self::Error> {
-        todo!()
+        if !value
+            .iter()
+            .all(|b| (b'a'..=b'z').contains(b) || (b'A'..=b'Z').contains(b))
+        {
+            return Err(Error::InvalidChunkType);
+        }
+        // TODO check range
+        Ok(Self(value))
     }
 }
 
 impl std::str::FromStr for ChunkType {
-    type Err = (); // TODO
+    type Err = Error;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        todo!()
+        let bytes: [u8; 4] = s.as_bytes().try_into().or(Err(Error::InvalidChunkType))?;
+        Self::try_from(bytes)
     }
 }
 
 impl std::fmt::Display for ChunkType {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        todo!()
+        f.write_str(std::str::from_utf8(&self.0).expect("Valid ASCII by construction"))
     }
 }
 

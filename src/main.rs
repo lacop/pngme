@@ -1,3 +1,6 @@
+// TODO: Remove eventually, but avoids warning spam for now.
+#![allow(dead_code)]
+
 mod args;
 mod chunk;
 mod chunk_type;
