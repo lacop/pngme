@@ -7,7 +7,10 @@ impl ChunkType {
     pub fn bytes(&self) -> [u8; 4] {
         self.0
     }
+}
 
+#[cfg(test)]
+impl ChunkType {
     fn get_bit(&self, n: usize) -> bool {
         self.0[n] & (1 << 5) != 0
     }
@@ -48,7 +51,6 @@ impl TryFrom<[u8; 4]> for ChunkType {
         {
             return Err(Error::InvalidChunkType);
         }
-        // TODO check range
         Ok(Self(value))
     }
 }

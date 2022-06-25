@@ -1,6 +1,3 @@
-// TODO: Remove eventually, but avoids warning spam for now.
-#![allow(dead_code)]
-
 mod args;
 mod chunk;
 mod chunk_type;
@@ -37,7 +34,6 @@ fn write_file_bytes(path: &str, bytes: &[u8]) -> Result<()> {
 
 fn main() -> Result<()> {
     let cli = args::Cli::parse();
-    println!("{:?}", cli); // TODO
 
     match &cli.command {
         args::Commands::Print { file } => {

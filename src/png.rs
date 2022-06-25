@@ -28,9 +28,6 @@ impl Png {
             Err(Error::NoSuchChunk.into())
         }
     }
-    pub fn header(&self) -> &[u8; 8] {
-        &Self::STANDARD_HEADER
-    }
     pub fn chunks(&self) -> &[Chunk] {
         &self.0
     }

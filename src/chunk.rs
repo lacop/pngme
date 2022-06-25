@@ -21,14 +21,12 @@ impl Chunk {
             crc: digest.finalize(),
         }
     }
+    #[cfg(test)]
     pub fn length(&self) -> u32 {
         self.data.len() as u32
     }
     pub fn chunk_type(&self) -> &ChunkType {
         &self.chunk_type
-    }
-    pub fn data(&self) -> &[u8] {
-        &self.data
     }
     pub fn crc(&self) -> u32 {
         self.crc

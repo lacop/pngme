@@ -1,6 +1,5 @@
 use thiserror::Error;
 
-// TODO: Maybe ChunkError or a better name like that?
 #[derive(Debug, Error)]
 pub enum Error {
     #[error("Chunk type is not valid")]
